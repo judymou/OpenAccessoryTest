@@ -2,4 +2,5 @@
 <resources>
     <string name="hello">Hello World, OpenAccessoryTest!</string>
     <string name="app_name">OpenAccessoryTest</string>
+    <string name="SensorLabel">Temperature\n\n\nPressure\n\n\nHumidity\n\n\nOpticaldust\n\n\nAH\n\n\nAV\n\n\nPhotoval\n\n\nCH4\n\n\nLPG\n\n\nCO\n\n\nH2\n\n\nGeiger</string>
 </resources>

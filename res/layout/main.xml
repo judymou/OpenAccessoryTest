@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
+    android:gravity="left|right"
+    android:orientation="horizontal" >
 
 <!-- <Button   -->
 <!-- 	android:id="@+id/sendButton" -->
@@ -26,12 +25,18 @@
 <!--     android:lines="10" -->
 <!--     android:editable="false" -->
 <!--     />     -->
+
 <EditText
-    android:id="@+id/lable"
-    />
+    android:id="@+id/editText2"
+    android:layout_width="126dp"
+    android:layout_height="wrap_content"
+    android:ems="10"
+    android:inputType="textMultiLine"
+    android:text="@string/SensorLabel" />
+
 <com.caltech.app.duinodroid.WaveformView
     android:id="@+id/waveformView"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content" />
     
 </LinearLayout>

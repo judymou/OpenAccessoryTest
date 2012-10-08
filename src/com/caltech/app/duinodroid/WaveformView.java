@@ -53,9 +53,9 @@ public class WaveformView extends View {
 
 	private final int border = 5;
 	// duration of the waveform shown.
-	private final int windowMilliseconds = 3000;
+	private final int windowMilliseconds = 48000;
 	// down-sample data to this rate for plotting
-	private final int plotSamplesPerSecond = 100;
+	private final int plotSamplesPerSecond = 2400;
 
 	/**
 	 * @param context
