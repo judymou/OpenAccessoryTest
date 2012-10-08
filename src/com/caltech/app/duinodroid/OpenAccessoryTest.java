@@ -18,6 +18,10 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 import android.hardware.usb.*;
 import android.app.Activity;
@@ -39,16 +43,17 @@ import android.widget.EditText;
 import android.util.Log;
 
 
-public class OpenAccessoryTest extends Activity implements Runnable {
+public class OpenAccessoryTest extends Activity implements Runnable{
 
-  private EditText mByteField;
-  private EditText mResponseField;
-  private Button mSendButton;
+  //private EditText mByteField;
+  //private EditText mResponseField;
+  //private Button mSendButton;
 
   private static final String TAG = "OpenAcc";
   private static final String ACTION_USB = "com.caltech.app.action.USB_ACTION";
   private PendingIntent mPermissionIntent;
   private boolean mPermissionRequestPending;
+  private WaveformView waveformView;
 
   private UsbManager mUsbManager;
   private UsbAccessory mAccessory;
@@ -62,15 +67,21 @@ public class OpenAccessoryTest extends Activity implements Runnable {
 
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-    mByteField = (EditText) findViewById(R.id.messagebyte);
-    mResponseField = (EditText) findViewById(R.id.arduinoresponse);
-    mSendButton = (Button) findViewById(R.id.sendButton);
-    mSendButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
+    //mByteField = (EditText) findViewById(R.id.messagebyte);
+    //mResponseField = (EditText) findViewById(R.id.arduinoresponse);
+    waveformView = (WaveformView) findViewById(R.id.waveformView);
+    //mSendButton = (Button) findViewById(R.id.sendButton);
+    //mSendButton.setOnClickListener(new OnClickListener() {
+    //  public void onClick(View v) {
         //sendMessageToArduino();
-      }
-    });
+    //  }
+    //});
+    
+    
+	waveformView.postInvalidate();  	
     log("OnCreating");
+    //Thread thread = new Thread(null, this, "OpenAccessoryTest");
+    //thread.start();
     setupAccessory();
   }
   
@@ -82,7 +93,7 @@ public class OpenAccessoryTest extends Activity implements Runnable {
 //		}
 //	}
   
-  @Override
+  //@Override
   public void onResume() {
     log("Resuming");
     super.onResume();
@@ -129,14 +140,6 @@ public class OpenAccessoryTest extends Activity implements Runnable {
     unregisterReceiver(mUsbReceiver);
     super.onDestroy();
   }
-
-  Handler mHandler = new Handler() {
-    @Override
-    public void handleMessage(Message msg) {
-      ValueMsg t = (ValueMsg) msg.obj;
-      log("Arduino sent: " + t.getFlag() + " " + t.getReading());
-    }
-  };
 
   private void setupAccessory() {
     log("In setupAccessory");
@@ -193,13 +196,52 @@ public class OpenAccessoryTest extends Activity implements Runnable {
     }
   }
 
+  public void run1() {
+	  log("On Running");
+//	  Timer timer1 = new Timer();
+//	  timer1.scheduleAtFixedRate(new Task(5), 500, 1000);
+	  int i = 0;
+	  while (true) {
+		  
+	  
+	  float sensorValues[] = new float[15];
+		sensorValues[0] = (float)(1.0 + i * 0.1);
+		sensorValues[1] = (float) 273.0 + i;
+		sensorValues[2] = (float) 98506.0 + i;
+		//sensorValues[3] = (float) 42.5;
+		sensorValues[3] = (float) 3 + i;
+		sensorValues[4] = (float) 36.0 + i;
+		sensorValues[5] = (float) 0.20167;
+		sensorValues[6] = (float) 1.021875;
+		sensorValues[7] = (float) 49.0;
+		sensorValues[8] = (float) 51.0;
+		sensorValues[9] = (float) 136.0;
+		sensorValues[10] = (float) 138.0;
+		sensorValues[11] = (float) 161.0;
+		sensorValues[12] = (float) 14629.0;
+		ValueMsg sensorValueMsg = new ValueMsg(sensorValues);
+		ArrayList<ValueMsg> sensorValueMsgs = new ArrayList<ValueMsg> ();
+		sensorValueMsgs.add(sensorValueMsg);
+		
+		Log.i(TAG, "in running sensor value msg size: " + sensorValueMsgs.size());
+		waveformView.addBatchData(sensorValueMsgs);
+		i++;
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  }
+  }
+  
   public void run() {
 		// TODO Auto-generated method stub
 		//Use this method to convert the bytes of data obtained from Arduino into different datatypes
 		
 		int ret = 0, intbits = 0;
 		byte[] buffer = new byte[16384];
-		
+		ArrayList<ValueMsg> sensorValueMsgs = new ArrayList<ValueMsg> ();
 		Log.i(TAG, "*****************In Running*******************************");
 		while (true) { // keep reading messages forever. There are prob lots of messages in the buffer, each 4 bytes
 			Log.i(TAG, "***********Before Reading*************************");
@@ -211,46 +253,54 @@ public class OpenAccessoryTest extends Activity implements Runnable {
 			}
 
 			Log.i(TAG, "*****************In while********* ret: " + ret);
+			float sensorValues[] = new float[15];
 			//Checks if it recieves the 4 bytes of data and converts it back into into using bit wise operation
 			if(ret == 60){
 				for (int i = 0; i < 60; i+= 4) {
 					intbits = (buffer[i+3] << 24) | ((buffer[i+2] & 0xff) << 16) | ((buffer[i+1] & 0xff) << 8) | (buffer[i] & 0xff);
 					float t = Float.intBitsToFloat(intbits); //This displays the standard deviation values on the TextView using a separate thread
+					sensorValues[(int)(i/4)] = t;
 					Log.i(TAG, "float: " + t);
 				}
+			}
+			ValueMsg sensorValueMsg = new ValueMsg(sensorValues);
+			sensorValueMsgs.add(sensorValueMsg);
+			if (sensorValueMsgs.size() == 2) {
+				waveformView.addBatchData(sensorValueMsgs);
+				sensorValueMsgs.clear();
 			}
 			Log.i(TAG, "**********End of while");
 		}
 	}
 
-  public void sendMessageToArduino() {
-    String valueStr = mByteField.getText().toString();
-    byte val;
-    try {
-      val = Byte.parseByte(valueStr);
-      log("Sending to Arduino: " + val);
-      sendCommand(val);
-    } catch (NumberFormatException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      alert("The Byte should be a number between 0 and 255");
-    }
-
-  }
-
-  public void sendCommand(byte value) {
-    byte[] buffer = new byte[1];
-    buffer[0] = (byte) value;
-    if (mOutputStream != null) {
-      try {
-        mOutputStream.write(buffer);
-      } catch (IOException e) {
-        log("Send failed: " + e.getMessage());
-      }
-    } else {
-      log("Send failed: mOutStream was null");
-    }
-  }
+//  public void sendMessageToArduino() {
+//    String valueStr = mByteField.getText().toString();
+//    byte val;
+//    try {
+//      val = Byte.parseByte(valueStr);
+//      log("Sending to Arduino: " + val);
+//      sendCommand(val);
+//    } catch (NumberFormatException e) {
+//      // TODO Auto-generated catch block
+//      e.printStackTrace();
+//      alert("The Byte should be a number between 0 and 255");
+//    }
+//
+//  }
+//
+//  public void sendCommand(byte value) {
+//    byte[] buffer = new byte[1];
+//    buffer[0] = (byte) value;
+//    if (mOutputStream != null) {
+//      try {
+//        mOutputStream.write(buffer);
+//      } catch (IOException e) {
+//        log("Send failed: " + e.getMessage());
+//      }
+//    } else {
+//      log("Send failed: mOutStream was null");
+//    }
+//  }
 
   private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 	@Override
@@ -280,8 +330,8 @@ public class OpenAccessoryTest extends Activity implements Runnable {
   };
 
   private void log(String string) {
-    String contents = mResponseField.getText().toString();
-    mResponseField.setText(string + "\n" + contents);
+    //String contents = mResponseField.getText().toString();
+    //mResponseField.setText(string + "\n" + contents);
   }
 
   public void alert(String message) {
@@ -294,5 +344,28 @@ public class OpenAccessoryTest extends Activity implements Runnable {
       }
     });
     alertDialog.show();
+  }
+  
+  private class Task extends TimerTask {
+	  private float num;
+	  public Task(float n) {
+		  log("Inside timer construct");
+		  num = n;
+	  }
+	  
+	  public void run() {
+		  log("inside timer run");
+			float sensorValues[] = new float[15];
+			sensorValues[0] = (float) 1.0;
+			sensorValues[1] = (float) 2.0;
+			sensorValues[2] = (float) 3.0;
+			sensorValues[3] = (float) 4.0;
+			sensorValues[4] = (float) 5.0;
+			sensorValues[5] = (float) 6.0;
+			ValueMsg sensorValueMsg = new ValueMsg(sensorValues);
+			ArrayList<ValueMsg> sensorValueMsgs = new ArrayList<ValueMsg> ();
+			sensorValueMsgs.add(sensorValueMsg);
+			waveformView.addBatchData(sensorValueMsgs);
+	  }
   }
 }

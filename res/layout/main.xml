@@ -5,38 +5,33 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Byte 0 (decimal)"
-    />    
- <EditText  
-	android:id="@+id/messagebyte"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="1"
-    /> 
 
-<Button  
-	android:id="@+id/sendButton"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Send to Arduino"
-    />    
+<!-- <Button   -->
+<!-- 	android:id="@+id/sendButton" -->
+<!--     android:layout_width="fill_parent"  -->
+<!--     android:layout_height="wrap_content"  -->
+<!--     android:text="Send to Arduino" -->
+<!--     />     -->
     
     
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Log"
-    />    
+<!-- <TextView   -->
+<!--     android:layout_width="fill_parent"  -->
+<!--     android:layout_height="wrap_content"  -->
+<!--     android:text="Log" -->
+<!--     />     -->
+<!-- <EditText -->
+<!-- 	android:id="@+id/arduinoresponse"   -->
+<!--     android:layout_width="fill_parent"  -->
+<!--     android:layout_height="wrap_content"  -->
+<!--     android:lines="10" -->
+<!--     android:editable="false" -->
+<!--     />     -->
 <EditText
-	android:id="@+id/arduinoresponse"  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:lines="10"
-    android:editable="false"
-    />    
-
+    android:id="@+id/lable"
+    />
+<com.caltech.app.duinodroid.WaveformView
+    android:id="@+id/waveformView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
     
 </LinearLayout>
